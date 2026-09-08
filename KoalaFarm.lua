@@ -1,455 +1,307 @@
-local a=game:GetService("Players").LocalPlayer
-local b=game:GetService("RunService")
-local c=game:GetService("UserInputService")
-local d=game:GetService("ReplicatedStorage")
-local e=a:WaitForChild("PlayerGui")
-local f=false
-local g={}
-local h=""
-local i={}
-local j=0
-local k=nil
-pcall(function()
-k=d:WaitForChild("Remotes",5)
-end)
-local function l(m)
-if not m.Character then return nil end
-return m.Character:FindFirstChild("HumanoidRootPart")
+local Players=game:GetService("Players")
+local RunService=game:GetService("RunService")
+local UserInputService=game:GetService("UserInputService")
+local ReplicatedStorage=game:GetService("ReplicatedStorage")
+local LP=Players.LocalPlayer
+local PlayerGui=LP:WaitForChild("PlayerGui")
+local Remotes=nil
+pcall(function()Remotes=ReplicatedStorage:WaitForChild("Remotes",5)end)
+local RecordingData={}
+local IsRecording=false
+local RecordingName=""
+local Frames={}
+local function GetHRP()local c=LP.Character if not c then return nil end return c:FindFirstChild("HumanoidRootPart")end
+local function GetHumanoid()local c=LP.Character if not c then return nil end return c:FindFirstChildOfClass("Humanoid")end
+local function StartRecording(name)IsRecording=true RecordingName=name or"Gravacao_"..os.date("%H%M%S")Frames={}print("🔴 GRAVANDO: "..RecordingName)end
+local function StopRecording()if not IsRecording then return end IsRecording=false RecordingData[RecordingName]={frames=Frames,count=#Frames}print("✅ SALVO: "..RecordingName.." ("..#Frames.." frames)")end
+local function PlayRecording(name)local data=RecordingData[name]if not data then print("❌ Não encontrado!")return end task.spawn(function()for _,cframe in ipairs(data.frames)do pcall(function()local hrp=GetHRP()if hrp then hrp.CFrame=cframe task.wait(0.05)end end)end end)print("▶️ REPRODUZINDO: "..name)end
+RunService.Heartbeat:Connect(function()if not IsRecording then return end pcall(function()local hrp=GetHRP()if hrp then table.insert(Frames,hrp.CFrame)end end)end)
+local ScreenGui=Instance.new("ScreenGui")
+ScreenGui.Name="KoalaFarmMainUI"
+ScreenGui.ResetOnSpawn=false
+ScreenGui.ZIndex=999
+ScreenGui.Parent=PlayerGui
+local MainFrame=Instance.new("Frame")
+MainFrame.Name="MainFrame"
+MainFrame.Size=UDim2.new(0,500,0,700)
+MainFrame.Position=UDim2.new(0.5,-250,0.5,-350)
+MainFrame.BackgroundColor3=Color3.fromRGB(20,20,30)
+MainFrame.BorderSizePixel=0
+MainFrame.Parent=ScreenGui
+local Corners=Instance.new("UICorner")
+Corners.CornerRadius=UDim.new(0,20)
+Corners.Parent=MainFrame
+local Shadow=Instance.new("Frame")
+Shadow.Name="Shadow"
+Shadow.Size=UDim2.new(1,20,1,20)
+Shadow.Position=UDim2.new(0,-10,0,-10)
+Shadow.BackgroundColor3=Color3.fromRGB(0,0,0)
+Shadow.BorderSizePixel=0
+Shadow.ZIndex=998
+Shadow.Parent=ScreenGui
+local ShadowCorner=Instance.new("UICorner")
+ShadowCorner.CornerRadius=UDim.new(0,20)
+ShadowCorner.Parent=Shadow
+local TitleBar=Instance.new("Frame")
+TitleBar.Name="TitleBar"
+TitleBar.Size=UDim2.new(1,0,0,70)
+TitleBar.BackgroundColor3=Color3.fromRGB(40,40,60)
+TitleBar.BorderSizePixel=0
+TitleBar.Parent=MainFrame
+local TitleCorner=Instance.new("UICorner")
+TitleCorner.CornerRadius=UDim.new(0,20)
+TitleCorner.Parent=TitleBar
+local TitleText=Instance.new("TextLabel")
+TitleText.Name="TitleText"
+TitleText.Size=UDim2.new(0.8,0,1,0)
+TitleText.BackgroundTransparency=1
+TitleText.TextColor3=Color3.fromRGB(255,200,0)
+TitleText.TextSize=28
+TitleText.Font=Enum.Font.GothamBold
+TitleText.Text="🐨 KOALA FARM"
+TitleText.TextXAlignment=Enum.TextXAlignment.Left
+TitleText.TextScaled=false
+TitleText.Parent=TitleBar
+local CloseButton=Instance.new("TextButton")
+CloseButton.Name="CloseButton"
+CloseButton.Size=UDim2.new(0,50,0,50)
+CloseButton.Position=UDim2.new(1,-60,0.5,-25)
+CloseButton.BackgroundColor3=Color3.fromRGB(200,50,50)
+CloseButton.TextColor3=Color3.fromRGB(255,255,255)
+CloseButton.TextSize=24
+CloseButton.Font=Enum.Font.GothamBold
+CloseButton.Text="✕"
+CloseButton.BorderSizePixel=0
+CloseButton.Parent=TitleBar
+local CloseCorner=Instance.new("UICorner")
+CloseCorner.CornerRadius=UDim.new(0,10)
+CloseCorner.Parent=CloseButton
+CloseButton.MouseButton1Click:Connect(function()MainFrame.Visible=not MainFrame.Visible end)
+local ScrollFrame=Instance.new("ScrollingFrame")
+ScrollFrame.Name="ScrollFrame"
+ScrollFrame.Size=UDim2.new(1,-30,1,-80)
+ScrollFrame.Position=UDim2.new(0,15,0,75)
+ScrollFrame.BackgroundColor3=Color3.fromRGB(20,20,30)
+ScrollFrame.BorderSizePixel=0
+ScrollFrame.ScrollBarThickness=6
+ScrollFrame.ScrollBarImageColor3=Color3.fromRGB(255,200,0)
+ScrollFrame.Parent=MainFrame
+local UIListLayout=Instance.new("UIListLayout")
+UIListLayout.Padding=UDim.new(0,12)
+UIListLayout.Parent=ScrollFrame
+ScrollFrame.CanvasSize=UDim2.new(0,0,0,0)
+UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()ScrollFrame.CanvasSize=UDim2.new(0,0,0,UIListLayout.AbsoluteContentSize.Y+20)end)
+local function CreateSection(title)
+local SectionFrame=Instance.new("Frame")
+SectionFrame.Name=title
+SectionFrame.Size=UDim2.new(1,-20,0,40)
+SectionFrame.BackgroundColor3=Color3.fromRGB(50,50,80)
+SectionFrame.BorderSizePixel=0
+SectionFrame.Parent=ScrollFrame
+local SectionCorner=Instance.new("UICorner")
+SectionCorner.CornerRadius=UDim.new(0,10)
+SectionCorner.Parent=SectionFrame
+local SectionLabel=Instance.new("TextLabel")
+SectionLabel.Size=UDim2.new(1,-20,1,0)
+SectionLabel.Position=UDim2.new(0,10,0,0)
+SectionLabel.BackgroundTransparency=1
+SectionLabel.TextColor3=Color3.fromRGB(255,200,0)
+SectionLabel.TextSize=16
+SectionLabel.Font=Enum.Font.GothamBold
+SectionLabel.Text="━━ "..title.." ━━"
+SectionLabel.TextXAlignment=Enum.TextXAlignment.Left
+SectionLabel.Parent=SectionFrame
 end
-local function n(m)
-if not m.Character then return nil end
-return m.Character:FindFirstChildOfClass("Humanoid")
+local function CreateButton(text,callback)
+local ButtonFrame=Instance.new("Frame")
+ButtonFrame.Name=text
+ButtonFrame.Size=UDim2.new(1,-20,0,50)
+ButtonFrame.BackgroundColor3=Color3.fromRGB(60,60,90)
+ButtonFrame.BorderSizePixel=0
+ButtonFrame.Parent=ScrollFrame
+local ButtonCorner=Instance.new("UICorner")
+ButtonCorner.CornerRadius=UDim.new(0,8)
+ButtonCorner.Parent=ButtonFrame
+local Button=Instance.new("TextButton")
+Button.Name="Btn"
+Button.Size=UDim2.new(1,0,1,0)
+Button.BackgroundTransparency=1
+Button.TextColor3=Color3.fromRGB(255,255,255)
+Button.TextSize=16
+Button.Font=Enum.Font.GothamBold
+Button.Text=text
+Button.Parent=ButtonFrame
+Button.MouseButton1Click:Connect(callback)
+Button.MouseEnter:Connect(function()ButtonFrame.BackgroundColor3=Color3.fromRGB(80,80,110)end)
+Button.MouseLeave:Connect(function()ButtonFrame.BackgroundColor3=Color3.fromRGB(60,60,90)end)
 end
-local function o()
-f=true
-h="Gravacao_"..os.date("%H%M%S")
-i={}
-j=tick()
-print("🔴 GRAVANDO: "..h)
+local function CreateTextBox(placeholder,callback)
+local TextBoxFrame=Instance.new("Frame")
+TextBoxFrame.Size=UDim2.new(1,-20,0,50)
+TextBoxFrame.BackgroundColor3=Color3.fromRGB(60,60,90)
+TextBoxFrame.BorderSizePixel=0
+TextBoxFrame.Parent=ScrollFrame
+local TextBoxCorner=Instance.new("UICorner")
+TextBoxCorner.CornerRadius=UDim.new(0,8)
+TextBoxCorner.Parent=TextBoxFrame
+local TextBox=Instance.new("TextBox")
+TextBox.Size=UDim2.new(1,-10,1,0)
+TextBox.Position=UDim2.new(0,5,0,0)
+TextBox.BackgroundTransparency=1
+TextBox.TextColor3=Color3.fromRGB(255,255,255)
+TextBox.TextSize=14
+TextBox.Font=Enum.Font.Gotham
+TextBox.PlaceholderColor3=Color3.fromRGB(150,150,150)
+TextBox.PlaceholderText=placeholder
+TextBox.Text=""
+TextBox.Parent=TextBoxFrame
+TextBox:GetPropertyChangedSignal("Text"):Connect(function()callback(TextBox.Text)end)
 end
-local function p()
-if not f then return end
-f=false
-g[h]={frames=i,created=tick()}
-print("✅ SALVO: "..h.." ("..#i.." frames)")
-end
-local function q(r)
-local s=g[r]
-if not s then print("❌ Não encontrado!")return end
-task.spawn(function()
-for _,t in ipairs(s.frames)do
-pcall(function()
-local u=a.Character
-if u then
-local v=u:FindFirstChild("HumanoidRootPart")
-if v then
-v.CFrame=t
-task.wait(0.05)
-end
-end
-end)
-end
-end)
-print("▶️ REPRODUZINDO: "..r)
-end
-b.Heartbeat:Connect(function()
-if not f then return end
-pcall(function()
-local u=a.Character
-if u then
-local v=u:FindFirstChild("HumanoidRootPart")
-if v then
-table.insert(i,v.CFrame)
-end
-end
-end)
-end)
-local w=nil
-local x=pcall(function()
-w=loadstring(game:HttpGet("https://raw.githubusercontent.com/Kinglsl/Rayfield/main/source"))()
-end)
-if not w then
-print("❌ Rayfield não disponível, usando UI nativa...")
-local y=Instance.new("ScreenGui")
-y.Name="KoalaFarmUI"
-y.ResetOnSpawn=false
-y.Parent=e
-local z=Instance.new("Frame")
-z.Name="MainFrame"
-z.Size=UDim2.new(0,400,0,600)
-z.Position=UDim2.new(0.5,-200,0.5,-300)
-z.BackgroundColor3=Color3.fromRGB(30,30,30)
-z.BorderSizePixel=0
-z.Parent=y
-local A=Instance.new("UICorner")
-A.CornerRadius=UDim.new(0,15)
-A.Parent=z
-local B=Instance.new("TextLabel")
-B.Name="Title"
-B.Size=UDim2.new(1,0,0,50)
-B.BackgroundColor3=Color3.fromRGB(50,50,50)
-B.TextColor3=Color3.fromRGB(255,200,0)
-B.TextSize=20
-B.Font=Enum.Font.GothamBold
-B.Text="🐨 Koala Farm"
-B.Parent=z
-local C=Instance.new("ScrollingFrame")
-C.Name="Scroll"
-C.Size=UDim2.new(1,-20,1,-60)
-C.Position=UDim2.new(0,10,0,60)
-C.BackgroundColor3=Color3.fromRGB(30,30,30)
-C.BorderSizePixel=0
-C.ScrollBarThickness=8
-C.Parent=z
-local D=Instance.new("UIListLayout")
-D.Padding=UDim.new(0,8)
-D.Parent=C
-C.CanvasSize=UDim2.new(0,0,0,0)
-D:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-C.CanvasSize=UDim2.new(0,0,0,D.AbsoluteContentSize.Y)
-end)
-local function E(F)
-local G=Instance.new("Frame")
-G.Size=UDim2.new(1,-20,0,35)
-G.BackgroundColor3=Color3.fromRGB(50,50,50)
-G.BorderSizePixel=0
-G.Parent=C
-local H=Instance.new("UICorner")
-H.CornerRadius=UDim.new(0,8)
-H.Parent=G
-local I=Instance.new("TextLabel")
-I.Size=UDim2.new(1,-10,1,0)
-I.Position=UDim2.new(0,5,0,0)
-I.BackgroundTransparency=1
-I.TextColor3=Color3.fromRGB(255,200,0)
-I.TextSize=14
-I.Font=Enum.Font.GothamBold
-I.Text="━━ "..F.." ━━"
-I.TextXAlignment=Enum.TextXAlignment.Left
-I.Parent=G
-end
-local function J(F,K)
-local L=Instance.new("TextButton")
-L.Name=F
-L.Size=UDim2.new(1,-20,0,40)
-L.BackgroundColor3=Color3.fromRGB(60,60,70)
-L.TextColor3=Color3.fromRGB(255,255,255)
-L.TextSize=13
-L.Font=Enum.Font.Gotham
-L.Text=F
-L.Parent=C
-local M=Instance.new("UICorner")
-M.CornerRadius=UDim.new(0,8)
-M.Parent=L
-L.MouseButton1Click:Connect(K)
-return L
-end
-E("GRAVAÇÃO DE MOVIMENTOS")
-local N="Nova Gravação"
-local O=Instance.new("Frame")
-O.Size=UDim2.new(1,-20,0,40)
-O.BackgroundColor3=Color3.fromRGB(60,60,70)
-O.BorderSizePixel=0
-O.Parent=C
-local P=Instance.new("UICorner")
-P.CornerRadius=UDim.new(0,8)
-P.Parent=O
-local Q=Instance.new("TextBox")
-Q.Size=UDim2.new(1,-10,1,0)
-Q.Position=UDim2.new(0,5,0,0)
-Q.BackgroundTransparency=1
-Q.TextColor3=Color3.fromRGB(255,255,255)
-Q.TextSize=12
-Q.Font=Enum.Font.Gotham
-Q.PlaceholderText="Nome da gravação..."
-Q.Text=""
-Q.Parent=O
-Q:GetPropertyChangedSignal("Text"):Connect(function()
-N=Q.Text~=""and Q.Text or"Gravacao_"..os.date("%H%M%S")
-end)
-J("🔴 INICIAR GRAVAÇÃO",function()
-o()
-end)
-J("⏹️ PARAR GRAVAÇÃO",function()
-p()
-end)
-J("▶️ REPRODUZIR ÚLTIMA",function()
-local r=nil
-for R,_ in pairs(g)do
-r=R
-break
-end
-if r then
-q(r)
-else
-print("❌ Nenhuma gravação!")
-end
-end)
-J("📊 LISTAR GRAVAÇÕES",function()
-print("\n"..string.rep("═",50))
-print("GRAVAÇÕES SALVAS:")
-print(string.rep("═",50))
-local S=0
-for R,_ in pairs(g)do
-S=S+1
-print(S..". "..R.." ("..#_.frames.." frames)")
-end
-if S==0 then
-print("Nenhuma gravação salva!")
-end
-print(string.rep("═",50).."\n")
-end)
-E("AUTO-FASE")
-local T=false
-local U=""
-local V=Instance.new("Frame")
-V.Size=UDim2.new(1,-20,0,40)
-V.BackgroundColor3=Color3.fromRGB(60,60,70)
-V.BorderSizePixel=0
-V.Parent=C
-local W=Instance.new("UICorner")
-W.CornerRadius=UDim.new(0,8)
-W.Parent=V
-local X=Instance.new("TextLabel")
-X.Size=UDim2.new(0.7,0,1,0)
-X.BackgroundTransparency=1
-X.TextColor3=Color3.fromRGB(255,255,255)
-X.TextSize=12
-X.Font=Enum.Font.Gotham
-X.Text="Selecionar Gravação:"
-X.TextXAlignment=Enum.TextXAlignment.Left
-X.Parent=V
-local Y=Instance.new("TextButton")
-Y.Size=UDim2.new(0,60,0,25)
-Y.Position=UDim2.new(1,-70,0.5,-12)
-Y.BackgroundColor3=Color3.fromRGB(100,100,100)
-Y.TextColor3=Color3.fromRGB(255,255,255)
-Y.TextSize=11
-Y.Font=Enum.Font.GothamBold
-Y.Text="..."
-Y.Parent=V
-local Z=Instance.new("UICorner")
-Z.CornerRadius=UDim.new(0,6)
-Z.Parent=Y
-Y.MouseButton1Click:Connect(function()
-local aa=""
-for R,_ in pairs(g)do
-aa=aa==""and R or aa..", "..R
-end
-if aa~=""then
-U=aa:match("^([^,]+)")
-print("✅ Selecionado: "..U)
-else
-print("❌ Nenhuma gravação!")
-end
-end)
-local function ab(ac,ad)
-local ae=Instance.new("Frame")
-ae.Size=UDim2.new(1,-20,0,40)
-ae.BackgroundColor3=Color3.fromRGB(60,60,70)
-ae.BorderSizePixel=0
-ae.Parent=C
-local af=Instance.new("UICorner")
-af.CornerRadius=UDim.new(0,8)
-af.Parent=ae
-local ag=Instance.new("TextLabel")
-ag.Size=UDim2.new(0.7,0,1,0)
-ag.BackgroundTransparency=1
-ag.TextColor3=Color3.fromRGB(255,255,255)
-ag.TextSize=12
-ag.Font=Enum.Font.Gotham
-ag.Text=ac
-ag.TextXAlignment=Enum.TextXAlignment.Left
-ag.Parent=ae
-local ah=Instance.new("TextButton")
-ah.Size=UDim2.new(0,50,0,25)
-ah.Position=UDim2.new(1,-60,0.5,-12)
-ah.BackgroundColor3=Color3.fromRGB(100,100,100)
-ah.TextColor3=Color3.fromRGB(255,255,255)
-ah.TextSize=11
-ah.Font=Enum.Font.GothamBold
-ah.Text="OFF"
-ah.Parent=ae
-local ai=Instance.new("UICorner")
-ai.CornerRadius=UDim.new(0,6)
-ai.Parent=ah
-local aj=false
-ah.MouseButton1Click:Connect(function()
-aj=not aj
-ah.BackgroundColor3=aj and Color3.fromRGB(50,200,50)or Color3.fromRGB(100,100,100)
-ah.Text=aj and"ON"or"OFF"
-ad(aj)
+local function CreateToggle(text,callback)
+local ToggleFrame=Instance.new("Frame")
+ToggleFrame.Name=text
+ToggleFrame.Size=UDim2.new(1,-20,0,50)
+ToggleFrame.BackgroundColor3=Color3.fromRGB(60,60,90)
+ToggleFrame.BorderSizePixel=0
+ToggleFrame.Parent=ScrollFrame
+local ToggleCorner=Instance.new("UICorner")
+ToggleCorner.CornerRadius=UDim.new(0,8)
+ToggleCorner.Parent=ToggleFrame
+local Label=Instance.new("TextLabel")
+Label.Size=UDim2.new(0.7,0,1,0)
+Label.BackgroundTransparency=1
+Label.TextColor3=Color3.fromRGB(255,255,255)
+Label.TextSize=14
+Label.Font=Enum.Font.GothamBold
+Label.Text=text
+Label.TextXAlignment=Enum.TextXAlignment.Left
+Label.Parent=ToggleFrame
+local ToggleButton=Instance.new("TextButton")
+ToggleButton.Size=UDim2.new(0,60,0,30)
+ToggleButton.Position=UDim2.new(1,-70,0.5,-15)
+ToggleButton.BackgroundColor3=Color3.fromRGB(100,100,100)
+ToggleButton.TextColor3=Color3.fromRGB(255,255,255)
+ToggleButton.TextSize=12
+ToggleButton.Font=Enum.Font.GothamBold
+ToggleButton.Text="OFF"
+ToggleButton.BorderSizePixel=0
+ToggleButton.Parent=ToggleFrame
+local ToggleButtonCorner=Instance.new("UICorner")
+ToggleButtonCorner.CornerRadius=UDim.new(0,6)
+ToggleButtonCorner.Parent=ToggleButton
+local state=false
+ToggleButton.MouseButton1Click:Connect(function()
+state=not state
+ToggleButton.BackgroundColor3=state and Color3.fromRGB(0,200,50)or Color3.fromRGB(100,100,100)
+ToggleButton.Text=state and"ON"or"OFF"
+callback(state)
 end)
 end
-ab("⚡ AUTO-FASE",function(ak)
-T=ak
-if T and U~=""then
-task.spawn(function()
-while T do
-q(U)
-task.wait(2)
-end
+local NameInput=""
+CreateSection("📹 GRAVAÇÃO DE MOVIMENTOS")
+CreateTextBox("Digite o nome da gravação...",function(text)NameInput=text~=""and text or"Gravacao_"..os.date("%H%M%S")end)
+CreateButton("🔴 INICIAR GRAVAÇÃO",function()StartRecording(NameInput)end)
+CreateButton("⏹️ PARAR GRAVAÇÃO",function()StopRecording()end)
+CreateButton("▶️ REPRODUZIR ÚLTIMA",function()
+local last=nil
+for name,_ in pairs(RecordingData)do last=name break end
+if last then PlayRecording(last)else print("❌ Nenhuma gravação!")end
 end)
-else
-T=false
-print("❌ Selecione uma gravação!")
-end
-end)
-E("FARM")
-ab("🖱️ AUTO CLICK",function(ak)
-if ak and k then
-task.spawn(function()
-while ak do
-pcall(function()
-k.ClicouParaGanharEgo:FireServer()
-end)
-task.wait(0.05)
-end
-end)
-end
-end)
-ab("🛡️ ANTI-AFK",function(ak)
-if ak then
-task.spawn(function()
-while ak do
-pcall(function()
-game:GetService("VirtualInputManager"):SendKeyEvent(true,Enum.KeyCode.Unknown,false,game)
-game:GetService("VirtualInputManager"):SendKeyEvent(false,Enum.KeyCode.Unknown,false,game)
-end)
-task.wait(45)
-end
-end)
-end
-end)
-J("❌ FECHAR",function()
-T=false
-y:Destroy()
-print("👋 Hub Fechado!")
-end)
-c.InputBegan:Connect(function(al,am)
-if am then return end
-if al.KeyCode==Enum.KeyCode.RightControl then
-z.Visible=not z.Visible
-end
-end)
-else
-local an=w:CreateWindow({Name="Koala Farm",LoadingTitle="Koala Farm",LoadingSubtitle="Carregando...",ConfigurationSaving={Enabled=false},Discord={Enabled=false},KeySystem=false})
-local ao=an:CreateTab("🎬 Gravação",0)
-local N="Nova Gravação"
-ao:CreateInput({Name="Nome da Gravação",PlaceHolder="Digite um nome",RemoveTextAfterFocusLost=false,Callback=function(ap)
-N=ap~=""and ap or"Gravacao_"..os.date("%H%M%S")
-end})
-ao:CreateButton({Name="🔴 INICIAR GRAVAÇÃO",Callback=function()
-o()
-end})
-ao:CreateButton({Name="⏹️ PARAR GRAVAÇÃO",Callback=function()
-p()
-end})
-ao:CreateButton({Name="▶️ REPRODUZIR ÚLTIMA",Callback=function()
-local r=nil
-for R,_ in pairs(g)do
-r=R
-break
-end
-if r then
-q(r)
-else
-print("❌ Nenhuma gravação!")
-end
-end})
-ao:CreateButton({Name="📊 LISTAR GRAVAÇÕES",Callback=function()
-print("\n"..string.rep("═",50))
-print("GRAVAÇÕES SALVAS:")
-print(string.rep("═",50))
-local S=0
-for R,_ in pairs(g)do
-S=S+1
-print(S..". "..R.." ("..#_.frames.." frames)")
-end
-if S==0 then
-print("Nenhuma gravação salva!")
-end
-print(string.rep("═",50).."\n")
-end})
-local aq=an:CreateTab("⚡ Auto-Fase",1)
-local T=false
-local U=""
-aq:CreateDropdown({Name="Selecionar Gravação",Options=function()
-local ar={}
-for R,_ in pairs(g)do
-table.insert(ar,R)
-end
-return ar
-end,CurrentOption="",Flag="AutoFaseRec",Callback=function(as)
-U=as
-end})
-aq:CreateToggle({Name="Auto-Fase Loop",Default=false,Flag="AutoFaseToggle",Callback=function(ak)
-T=ak
-if T and U~=""then
-task.spawn(function()
-while T do
-q(U)
-task.wait(2)
-end
-end)
-else
-T=false
-print("❌ Selecione uma gravação!")
-end
-end})
-local at=an:CreateTab("🎮 Farm",2)
-at:CreateToggle({Name="Auto Click",Default=false,Flag="AutoClickToggle",Callback=function(ak)
-if ak and k then
-task.spawn(function()
-while ak do
-pcall(function()
-k.ClicouParaGanharEgo:FireServer()
-end)
-task.wait(0.05)
-end
-end)
-end
-end})
-at:CreateToggle({Name="Anti-AFK",Default=true,Flag="AntiAFKToggle",Callback=function(ak)
-if ak then
-task.spawn(function()
-while ak do
-pcall(function()
-game:GetService("VirtualInputManager"):SendKeyEvent(true,Enum.KeyCode.Unknown,false,game)
-game:GetService("VirtualInputManager"):SendKeyEvent(false,Enum.KeyCode.Unknown,false,game)
-end)
-task.wait(45)
-end
-end)
-end
-end})
-local au=an:CreateTab("⚙️ Config",3)
-au:CreateButton({Name="🎨 Tema Claro",Callback=function()
-w:SetTheme("Light")
-end})
-au:CreateButton({Name="🎨 Tema Escuro",Callback=function()
-w:SetTheme("Dark")
-end})
-au:CreateButton({Name="❌ FECHAR SCRIPT",Callback=function()
-T=false
-pcall(function()
-an:Destroy()
-end)
-print("👋 Script Fechado!")
-end})
-w:Notify({Title="Koala Farm",Content="✅ Sistema de Gravação Carregado!",Duration=5})
-end
+CreateButton("📊 LISTAR GRAVAÇÕES",function()
 print("\n"..string.rep("═",60))
-print("✅ KOALA FARM - GRAVAÇÃO AVANÇADA")
+print("GRAVAÇÕES SALVAS:")
 print(string.rep("═",60))
-print("📌 Script carregado com sucesso!")
-print("🎮 Compatível com PC, Mobile e Tablets")
-print("🔐 Script ofuscado e otimizado")
-print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-print("📊 Funcionalidades Principais:")
+local i=0
+for name,data in pairs(RecordingData)do i=i+1 print(i..". "..name.." ("..data.count.." frames)")end
+if i==0 then print("Nenhuma gravação salva!")end
+print(string.rep("═",60).."\n")
+end)
+CreateSection("⚡ AUTO-FASE")
+local SelectedRecording=""
+CreateButton("🔹 SELECIONAR GRAVAÇÃO",function()
+local first=nil
+for name,_ in pairs(RecordingData)do first=name break end
+if first then SelectedRecording=first print("✅ Selecionado: "..first)else print("❌ Nenhuma gravação!")end
+end)
+local AutoFaseActive=false
+CreateToggle("⚡ AUTO-FASE LOOP",function(state)
+AutoFaseActive=state
+if state and SelectedRecording~=""then
+task.spawn(function()
+while AutoFaseActive do PlayRecording(SelectedRecording)task.wait(2)end
+end)
+else
+AutoFaseActive=false
+if state then print("❌ Selecione uma gravação primeiro!")end
+end
+end)
+CreateSection("🎮 FARM")
+local AutoClickActive=false
+CreateToggle("🖱️ AUTO CLICK",function(state)
+AutoClickActive=state
+if state and Remotes then
+task.spawn(function()
+while AutoClickActive do
+pcall(function()Remotes.ClicouParaGanharEgo:FireServer()end)
+task.wait(0.05)
+end
+end)
+end
+end)
+local AntiAFKActive=true
+CreateToggle("🛡️ ANTI-AFK",function(state)
+AntiAFKActive=state
+if state then
+task.spawn(function()
+while AntiAFKActive do
+pcall(function()
+game:GetService("VirtualInputManager"):SendKeyEvent(true,Enum.KeyCode.Unknown,false,game)
+game:GetService("VirtualInputManager"):SendKeyEvent(false,Enum.KeyCode.Unknown,false,game)
+end)
+task.wait(45)
+end
+end)
+end
+end)
+CreateButton("🎁 COLETAR PRESENTES",function()
+if Remotes then
+task.spawn(function()
+for id=1,12 do
+pcall(function()Remotes.GiftRemotes.Claim:InvokeServer(id)end)
+task.wait(0.2)
+end
+end)
+print("✅ Coletando presentes!")
+end
+end)
+CreateButton("💰 COLETAR GRUPO",function()
+if Remotes then pcall(function()Remotes.GroupRewardRemotes.Claim:InvokeServer()end)print("✅ Recompensa do grupo coletada!")end
+end)
+CreateSection("⚙️ AJUSTES")
+CreateButton("❌ FECHAR HUB",function()
+AutoFaseActive=false
+AutoClickActive=false
+AntiAFKActive=false
+ScreenGui:Destroy()
+print("👋 Koala Farm Fechado!")
+end)
+UserInputService.InputBegan:Connect(function(input,gameProcessed)
+if gameProcessed then return end
+if input.KeyCode==Enum.KeyCode.RightControl then
+MainFrame.Visible=not MainFrame.Visible
+end
+end)
+print("\n"..string.rep("═",70))
+print("✅ KOALA FARM v1.0 - CARREGADO COM SUCESSO!")
+print(string.rep("═",70))
+print("📌 PRESSIONE: RightControl (Ctrl Direito) para abrir/fechar a UI")
+print("🎮 COMPATÍVEL: PC, Mobile, Tablets")
+print("🔐 SCRIPT: Ofuscado e Otimizado")
+print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+print("📊 FUNCIONALIDADES:")
 print("   ✅ Gravação de Movimentos em Tempo Real")
 print("   ✅ Auto-Fase com Loop Infinito")
 print("   ✅ Auto Click Automático")
 print("   ✅ Anti-AFK Protegido")
-print("   ✅ UI Rayfield ou Nativa")
-print(string.rep("═",60).."\n")
+print("   ✅ Coletar Presentes e Recompensas")
+print(string.rep("═",70).."\n")
